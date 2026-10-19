@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#eaf4fc">
+  <title>今天先做哪個？｜大學生待辦抽籤器</title>
+
+  <style>
+    /* ===== 1. 全站基本樣式 ===== */
+    :root {
+      --primary: #78b6e5;
+      --primary-dark: #337ba9;
+      --primary-light: #eaf4fc;
+      --background: #f3f8fc;
+      --white: #ffffff;
+      --text: #254e6d;
+      --muted: #6d879c;
+      --border: #d7e7f3;
+      --danger: #c24d59;
+      --success: #32816e;
+      --radius: 18px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 0;
+      background: var(--background);
+      color: var(--text);
+      font-family:
+        "Microsoft JhengHei",
+        "PingFang TC",
+        system-ui,
+        sans-serif;
+      line-height: 1.6;
+      overflow-wrap: anywhere;
+    }
+
+    button,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+      touch-action: manipulation;
+    }
+
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 3px solid var(--primary-dark);
+      outline-offset: 3px;
+    }
+
+    .container {
+      width: min(100% - 28px, 760px);
+      margin: 36px auto 60px;
+    }
+
+    /* ===== 2. 頁面標題 ===== */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header h1 {
+      font-size: clamp(28px, 6vw, 38px);
+      margin: 0 0 8px;
+      color: var(--text);
+      letter-spacing: 1px;
+    }
+
+    .header p {
+      color: var(--muted);
+      margin: 0;
+      font-size: 15px;
+    }
+
+    /* ===== 3. 共用卡片樣式 ===== */
+    .card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 22px rgba(42, 91, 125, 0.05);
+      min-width: 0;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 20px;
+      color: var(--text);
+    }
+
+    .field {
+      margin-bottom: 16px;
+      min-width: 0;
+    }
+
+    .field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 7px;
+      font-size: 14px;
+    }
+
+    .field input,
+    .field select {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      height: 46px;
+      padding: 10px 12px;
+      background: #f9fcff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 15px;
+    }
+
+    .field input::placeholder {
+      color: #8c9eac;
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    /* ===== 4. 按鈕樣式 ===== */
+    .btn {
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 11px;
+      font-weight: 600;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #123d5b;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #61a7db;
+    }
+
+    .btn-outline {
+      background: var(--white);
+      color: var(--primary-dark);
+      border: 1px solid var(--primary);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: var(--primary-light);
+    }
+
+    .btn-danger {
+      background: #fff0f1;
+      color: var(--danger);
+      border: 1px solid #f2cbd0;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+      background: #ffe3e6;
+    }
+
+    .btn-small {
+      min-height: 40px;
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+
+    .btn-full {
+      width: 100%;
+    }
+
+    /* ===== 5. 抽籤互動區 ===== */
+    .draw-area {
+      background: var(--primary-light);
+      border-radius: 15px;
+      padding: 26px 18px;
+      text-align: center;
+    }
+
+    .draw-icon {
+      font-size: 36px;
+      margin-bottom: 6px;
+    }
+
+    .draw-title {
+      margin: 0 0 16px;
+      color: var(--primary-dark);
+      font-size: 19px;
+      font-weight: bold;
+    }
+
+    .draw-result {
+      background: white;
+      min-height: 150px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      padding: 22px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .result-label {
+      color: var(--muted);
+      font-size: 13px;
+      margin: 0;
+    }
+
+    .result-name {
+      color: var(--text);
+      font-size: clamp(20px, 5vw, 27px);
+      font-weight: 700;
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .result-meta {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .draw-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draw-buttons .btn {
+      min-width: 130px;
+    }
+
+    .draw-result.is-drawing {
+      animation: drawingPulse 0.18s ease-in-out infinite alternate;
+    }
+
+    @keyframes drawingPulse {
+      from {
+        background: #ffffff;
+        transform: scale(1);
+      }
+
+      to {
+        background: #f4faff;
+        transform: scale(0.99);
+      }
+    }
+
+    /* ===== 6. 待辦清單 ===== */
+    .task-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .task-item {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 13px;
+      background: #fbfdff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .task-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .task-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 8px;
+      overflow-wrap: anywhere;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 3px 10px;
+      font-size: 12px;
+      border-radius: 999px;
+      background: #deeffb;
+      color: #235f89;
+    }
+
+    .time-tag {
+      background: #f1f5f8;
+      color: #58748c;
+    }
+
+    .task-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      justify-content: flex-end;
+    }
+
+    .task-item.completed {
+      background: #f5f8fa;
+      opacity: 0.78;
+    }
+
+    .task-item.completed .task-name {
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+
+    .empty-message {
+      text-align: center;
+      padding: 28px 10px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    /* ===== 7. 完成進度條 ===== */
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .progress-header h2 {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .progress-percent {
+      font-weight: bold;
+      color: var(--primary-dark);
+      font-size: 23px;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 13px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #e2edf5;
+    }
+
+    .progress-fill {
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--primary);
+      transition: width 0.35s ease;
+    }
+
+    .progress-text {
+      font-size: 14px;
+      color: var(--muted);
+      margin: 10px 0 0;
+    }
+
+    /* ===== 8. 提示訊息 ===== */
+    .notice {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted);
+      margin-top: 14px;
+      min-height: 22px;
+    }
+
+    .form-message {
+      min-height: 22px;
+      margin: 12px 0 0;
+      color: var(--danger);
+      font-size: 14px;
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 30px;
+    }
+
+    /* ===== 9. 手機版響應式設計 ===== */
+    @media (max-width: 600px) {
+      .container {
+        margin-top: 22px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .field-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .task-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .task-actions {
+        justify-content: flex-start;
+      }
+
+      .task-actions .btn {
+        flex: 1;
+      }
+
+      .draw-buttons {
+        flex-direction: column;
+      }
+
+      .draw-buttons .btn {
+        width: 100%;
+      }
+
+      .draw-area {
+        padding: 22px 12px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="container">
+
+    <!-- ===== 網頁標題 ===== -->
+    <header class="header">
+      <h1>今天先做哪個？</h1>
+      <p>把選擇困難交給抽籤，現在就開始！</p>
+    </header>
+
+    <!-- ===== 新增任務區 ===== -->
+    <section class="card" aria-labelledby="addTitle">
+      <h2 class="section-title" id="addTitle">✏️ 新增待辦事項</h2>
+
+      <form id="taskForm" novalidate>
+        <div class="field">
+          <label for="taskName">任務名稱</label>
+          <input
+            type="text"
+            id="taskName"
+            placeholder="例如：完成英文報告"
+            maxlength="100"
+            autocomplete="off"
+            required
+          >
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="taskCategory">任務類別</label>
+            <select id="taskCategory">
+              <option value="課業">課業</option>
+              <option value="生活">生活</option>
+              <option value="運動">運動</option>
+              <option value="其他">其他</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="taskTime">預估時間</label>
+            <select id="taskTime">
+              <option value="15分鐘">15分鐘</option>
+              <option value="30分鐘">30分鐘</option>
+              <option value="60分鐘">60分鐘</option>
+              <option value="60分鐘以上">60分鐘以上</option>
+            </select>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full">
+          ＋ 新增任務
+        </button>
+
+        <p
+          id="formMessage"
+          class="form-message"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </form>
+    </section>
+
+    <!-- ===== 隨機抽籤區 ===== -->
+    <section class="card" aria-labelledby="drawSectionTitle">
+      <h2 class="section-title" id="drawSectionTitle">🎲 隨機待辦抽籤</h2>
+
+      <div class="draw-area">
+        <div class="draw-icon" aria-hidden="true">🎯</div>
+
+        <p class="draw-title">不知道先做什麼？讓抽籤來決定！</p>
+
+        <div class="draw-result" id="drawResult">
+          <p class="result-label" id="resultLabel">抽籤結果</p>
+
+          <p class="result-name" id="resultName">
+            準備好開始了嗎？
+          </p>
+
+          <div class="result-meta" id="resultMeta"></div>
+        </div>
+
+        <div class="draw-buttons">
+          <button
+            type="button"
+            class="btn btn-primary"
+            id="drawButton"
+          >
+            🎲 幫我決定！
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline"
+            id="redrawButton"
+            disabled
+          >
+            ↻ 重新抽籤
+          </button>
+        </div>
+
+        <p class="notice" id="drawNotice" role="status" aria-live="polite">
+          新增任務後，就可以開始抽籤囉！
+        </p>
+      </div>
+    </section>
+
+    <!-- ===== 待辦清單區 ===== -->
+    <section class="card" aria-labelledby="listTitle">
+      <h2 class="section-title" id="listTitle">📋 我的待辦清單</h2>
+
+      <ul id="taskList" class="task-list"></ul>
+
+      <p id="emptyMessage" class="empty-message">
+        目前還沒有任務，先新增一件想完成的事情吧！
+      </p>
+    </section>
+
+    <!-- ===== 完成進度區 ===== -->
+    <section class="card" aria-labelledby="progressTitle">
+      <div class="progress-header">
+        <h2 id="progressTitle">📊 完成進度</h2>
+        <span class="progress-percent" id="progressPercent">0%</span>
+      </div>
+
+      <div
+        class="progress-track"
+        id="progressTrack"
+        role="progressbar"
+        aria-label="任務完成進度"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="0"
+      >
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+
+      <p class="progress-text" id="progressText">
+        已完成 0 / 0 件任務
+      </p>
+    </section>
+
+    <footer class="footer">
+      今天先做哪個？｜讓每一個小小的開始，都成為進步。
+      <br>
+      任務資料僅保存在目前使用的瀏覽器中。
+    </footer>
+
+  </main>
+
+  <script>
+    "use strict";
+
+    /* ==================================================
+       1. 基本設定與取得 HTML 元素
+       ================================================== */
+
+    const STORAGE_KEY = "student_todo_lottery_v1";
+
+    const CATEGORIES = ["課業", "生活", "運動", "其他"];
+
+    const TIMES = [
+      "15分鐘",
+      "30分鐘",
+      "60分鐘",
+      "60分鐘以上"
+    ];
+
+    const taskForm = document.getElementById("taskForm");
+    const taskNameInput = document.getElementById("taskName");
+    const taskCategoryInput = document.getElementById("taskCategory");
+    const taskTimeInput = document.getElementById("taskTime");
+    const formMessage = document.getElementById("formMessage");
+
+    const taskList = document.getElementById("taskList");
+    const emptyMessage = document.getElementById("emptyMessage");
+
+    const drawResult = document.getElementById("drawResult");
+    const resultLabel = document.getElementById("resultLabel");
+    const resultName = document.getElementById("resultName");
+    const resultMeta = document.getElementById("resultMeta");
+
+    const drawButton = document.getElementById("drawButton");
+    const redrawButton = document.getElementById("redrawButton");
+    const drawNotice = document.getElementById("drawNotice");
+
+    const progressPercent = document.getElementById("progressPercent");
+    const progressFill = document.getElementById("progressFill");
+    const progressText = document.getElementById("progressText");
+    const progressTrack = document.getElementById("progressTrack");
+
+    // tasks 用來存放所有待辦任務。
+    let tasks = [];
+
+    // 記錄目前抽中的任務 ID。
+    let selectedTaskId = null;
+
+    // 動畫進行時設為 true，避免重複抽籤。
+    let isDrawing = false;
+
+    // 記錄目前抽籤動畫的計時器。
+    let drawingInterval = null;
+    let drawingTimeout = null;
+
+
+    /* ==================================================
+       2. localStorage：儲存與讀取待辦資料
+       ================================================== */
+
+    function saveTasks() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+        return true;
+      } catch (error) {
+        console.error("儲存任務失敗：", error);
+        return false;
+      }
+    }
+
+    function loadTasks() {
+      try {
+        const savedData = localStorage.getItem(STORAGE_KEY);
+
+        if (savedData === null) {
+          return [];
+        }
+
+        const parsedData = JSON.parse(savedData);
+
+        // 確認讀取的資料是陣列。
+        if (!Array.isArray(parsedData)) {
+          throw new Error("儲存格式不正確");
+        }
+
+        // 檢查資料格式，避免舊資料或錯誤內容造成問題。
+        const validTasks = [];
+        const usedIds = new Set();
+
+        for (const task of parsedData) {
+          if (
+            task === null ||
+            typeof task !== "object" ||
+            typeof task.id !== "string" ||
+            task.id.length === 0 ||
+            typeof task.name !== "string" ||
+            task.name.trim().length === 0 ||
+            task.name.length > 100 ||
+            !CATEGORIES.includes(task.category) ||
+            !TIMES.includes(task.time) ||
+            typeof task.completed !== "boolean" ||
+            usedIds.has(task.id)
+          ) {
+            continue;
+          }
+
+          usedIds.add(task.id);
+
+          validTasks.push({
+            id: task.id,
+            name: task.name,
+            category: task.category,
+            time: task.time,
+            completed: task.completed
+          });
+        }
+
+        return validTasks;
+
+      } catch (error) {
+        console.error("讀取任務失敗：", error);
+        return [];
+      }
+    }
+
+
+    /* ==================================================
+       3. 建立任務 ID
+       每筆任務都有不同 ID，方便完成與刪除。
+       ================================================== */
+
+    function createTaskId() {
+      let id;
+
+      do {
+        id =
+          Date.now().toString(36) +
+          "-" +
+          Math.random().toString(36).slice(2, 12);
+      } while (tasks.some(task => task.id === id));
+
+      return id;
+    }
+
+
+    /* ==================================================
+       4. 新增任務
+       ================================================== */
+
+    function addTask(event) {
+      event.preventDefault();
+
+      const name = taskNameInput.value.trim();
+      const category = taskCategoryInput.value;
+      const time = taskTimeInput.value;
+
+      formMessage.textContent = "";
+
+      // 檢查任務名稱是否有效。
+      if (name.length === 0) {
+        formMessage.textContent = "請先輸入任務名稱！";
+        taskNameInput.focus();
+        return;
+      }
+
+      if (name.length > 100) {
+        formMessage.textContent = "任務名稱不可超過 100 個字元。";
+        taskNameInput.focus();
+        return;
+      }
+
+      if (!CATEGORIES.includes(category)) {
+        formMessage.textContent = "請選擇正確的任務類別。";
+        return;
+      }
+
+      if (!TIMES.includes(time)) {
+        formMessage.textContent = "請選擇正確的預估時間。";
+        return;
+      }
+
+      // 建立一筆新的任務物件。
+      const newTask = {
+        id: createTaskId(),
+        name: name,
+        category: category,
+        time: time,
+        completed: false
+      };
+
+      tasks.push(newTask);
+
+      // 儲存資料並重新整理畫面。
+      saveTasks();
+      renderAll();
+
+      // 新增成功後清空表單。
+      taskForm.reset();
+      taskNameInput.focus();
+
+      // 如果正在抽籤動畫中，不修改動畫提示。
+      if (!isDrawing) {
+        drawNotice.textContent = "新增成功！可以開始抽籤囉！";
+      }
+    }
+
+
+    /* ==================================================
+       5. 完成任務與恢復未完成
+       ================================================== */
+
+    function toggleTask(id) {
+      const task = tasks.find(item => item.id === id);
+
+      if (!task) {
+        return;
+      }
+
+      task.completed = !task.completed;
+
+      // 如果目前抽中的任務已完成，就清除抽籤結果。
+      if (task.id === selectedTaskId && task.completed) {
+        selectedTaskId = null;
+      }
+
+      saveTasks();
+      renderAll();
+    }
+
+
+    /* ==================================================
+       6. 刪除任務
+       刪除前使用 confirm() 請使用者確認。
+       ================================================== */
+
+    function deleteTask(id) {
+      const task = tasks.find(item => item.id === id);
+
+      if (!task) {
+        return;
+      }
+
+      const confirmed = window.confirm(
+        "確定要刪除「" + task.name + "」嗎？\n刪除後無法復原。"
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      tasks = tasks.filter(item => item.id !== id);
+
+      if (selectedTaskId === id) {
+        selectedTaskId = null;
+      }
+
+      saveTasks();
+      renderAll();
+    }
+
+
+    /* ==================================================
+       7. 安全建立標籤
+       使用 textContent，不把任務名稱當成 HTML。
+       ================================================== */
+
+    function createTag(text, extraClass = "") {
+      const tag = document.createElement("span");
+
+      tag.className = "tag";
+
+      if (extraClass) {
+        tag.classList.add(extraClass);
+      }
+
+      tag.textContent = text;
+
+      return tag;
+    }
+
+
+    /* ==================================================
+       8. 顯示待辦清單
+       未完成任務排前面，已完成任務排後面。
+       ================================================== */
+
+    function renderTaskList() {
+      // 先清空原本的列表。
+      taskList.replaceChildren();
+
+      emptyMessage.hidden = tasks.length > 0;
+
+      const sortedTasks = [...tasks].sort((a, b) => {
+        return Number(a.completed) - Number(b.completed);
+      });
+
+      sortedTasks.forEach(task => {
+        const li = document.createElement("li");
+        li.className = "task-item";
+
+        if (task.completed) {
+          li.classList.add("completed");
+        }
+
+        // 任務資訊區。
+        const info = document.createElement("div");
+        info.className = "task-info";
+
+        const name = document.createElement("p");
+        name.className = "task-name";
+
+        // 這裡使用 textContent，避免執行使用者輸入的 HTML。
+        name.textContent = task.name;
+
+        const meta = document.createElement("div");
+        meta.className = "task-meta";
+
+        const categoryTag = createTag(task.category);
+        const timeTag = createTag(task.time, "time-tag");
+
+        const status = document.createElement("span");
+        status.textContent = task.completed
+          ? "✓ 已完成"
+          : "○ 未完成";
+
+        meta.append(categoryTag, timeTag, status);
+        info.append(name, meta);
+
+        // 任務操作按鈕。
+        const actions = document.createElement("div");
+        actions.className = "task-actions";
+
+        const completeButton = document.createElement("button");
+        completeButton.type = "button";
+        completeButton.className = "btn btn-outline btn-small";
+
+        completeButton.textContent = task.completed
+          ? "恢復未完成"
+          : "✓ 完成";
+
+        completeButton.setAttribute(
+          "aria-label",
+          (task.completed ? "恢復任務：" : "完成任務：") + task.name
+        );
+
+        completeButton.addEventListener("click", () => {
+          toggleTask(task.id);
+        });
+
+        const deleteButton = document.createElement("button");
+        deleteButton.type = "button";
+        deleteButton.className = "btn btn-danger btn-small";
+        deleteButton.textContent = "刪除";
+
+        deleteButton.setAttribute(
+          "aria-label",
+          "刪除任務：" + task.name
+        );
+
+        deleteButton.addEventListener("click", () => {
+          deleteTask(task.id);
+        });
+
+        actions.append(completeButton, deleteButton);
+
+        li.append(info, actions);
+        taskList.appendChild(li);
+      });
+    }
+
+
+    /* ==================================================
+       9. 計算完成進度
+       完成率 = 已完成數量 / 全部任務數量 × 100
+       ================================================== */
+
+    function renderProgress() {
+      const total = tasks.length;
+
+      const completed = tasks.filter(task => {
+        return task.completed;
+      }).length;
+
+      const percent = total === 0
+        ? 0
+        : Math.round((completed / total) * 100);
+
+      progressPercent.textContent = percent + "%";
+      progressFill.style.width = percent + "%";
+      progressText.textContent =
+        "已完成 " + completed + " / " + total + " 件任務";
+
+      progressTrack.setAttribute("aria-valuenow", String(percent));
+      progressTrack.setAttribute(
+        "aria-valuetext",
+        "已完成 " + completed + " 件，共 " + total + " 件任務"
+      );
+    }
+
+
+    /* ==================================================
+       10. 抽籤結果顯示
+       ================================================== */
+
+    function displaySelectedTask(task, isAnimation = false) {
+      resultMeta.replaceChildren();
+
+      if (!task) {
+        resultLabel.textContent = "抽籤結果";
+        resultName.textContent = "準備好開始了嗎？";
+        return;
+      }
+
+      resultLabel.textContent = isAnimation
+        ? "正在幫你抽選..."
+        : "這次抽到的任務是";
+
+      resultName.textContent = task.name;
+
+      resultMeta.append(
+        createTag(task.category),
+        createTag(task.time, "time-tag")
+      );
+    }
+
+
+    /* ==================================================
+       11. 更新抽籤按鈕及狀態提示
+       ================================================== */
+
+    function renderDrawState() {
+      const availableTasks = tasks.filter(task => !task.completed);
+
+      // 動畫期間禁止重新按抽籤。
+      drawButton.disabled = isDrawing || availableTasks.length === 0;
+
+      redrawButton.disabled =
+        isDrawing ||
+        availableTasks.length === 0 ||
+        selectedTaskId === null;
+
+      // 動畫期間由動畫函式控制畫面，不在這裡覆蓋。
+      if (isDrawing) {
+        return;
+      }
+
+      const selectedTask = availableTasks.find(task => {
+        return task.id === selectedTaskId;
+      });
+
+      if (selectedTask) {
+        displaySelectedTask(selectedTask);
+        drawNotice.textContent = "可以開始做這件事，或重新抽籤！";
+      } else {
+        selectedTaskId = null;
+        displaySelectedTask(null);
+
+        if (tasks.length === 0) {
+          resultName.textContent = "還沒有待辦任務";
+          drawNotice.textContent =
+            "目前沒有任務，先新增一件想完成的事情吧！";
+        } else if (availableTasks.length === 0) {
+          resultName.textContent = "全部完成了！🎉";
+          drawNotice.textContent =
+            "目前沒有尚未完成的任務，做得很好！";
+        } else {
+          resultName.textContent = "準備好開始了嗎？";
+          drawNotice.textContent =
+            "還有 " + availableTasks.length +
+            " 件未完成任務，按下按鈕開始抽籤！";
+        }
+      }
+    }
+
+
+    /* ==================================================
+       12. 隨機抽籤功能
+       只會從未完成的任務中挑選。
+       約 1 秒內快速切換任務名稱，模擬抽籤效果。
+       ================================================== */
+
+    function pickRandomTask(taskArray) {
+      const randomIndex = Math.floor(
+        Math.random() * taskArray.length
+      );
+
+      return taskArray[randomIndex];
+    }
+
+    function drawTask() {
+      // 如果正在動畫中，不允許再次執行。
+      if (isDrawing) {
+        return;
+      }
+
+      const availableTasks = tasks.filter(task => !task.completed);
+
+      if (availableTasks.length === 0) {
+        renderDrawState();
+        return;
+      }
+
+      isDrawing = true;
+
+      drawButton.disabled = true;
+      redrawButton.disabled = true;
+
+      drawResult.classList.add("is-drawing");
+
+      resultLabel.textContent = "正在幫你決定...";
+      drawNotice.textContent = "抽籤中，看看今天的任務是什麼！";
+
+      // 動畫每 90 毫秒切換一次候選任務。
+      drawingInterval = window.setInterval(() => {
+        const animationTask = pickRandomTask(availableTasks);
+        displaySelectedTask(animationTask, true);
+      }, 90);
+
+      // 約 1 秒後停止動畫，正式抽出一筆任務。
+      drawingTimeout = window.setTimeout(() => {
+        window.clearInterval(drawingInterval);
+
+        drawingInterval = null;
+        drawingTimeout = null;
+
+        // 最終結果獨立隨機抽取，且不受動畫順序影響。
+        // 重新抽籤時，也允許抽中與前一次相同的任務。
+        const selectedTask = pickRandomTask(availableTasks);
+
+        // 若動畫期間清單有變動，再確認任務仍可抽選。
+        const currentAvailable = tasks.filter(task => !task.completed);
+
+        const finalTask = currentAvailable.some(
+          task => task.id === selectedTask.id
+        )
+          ? selectedTask
+          : (
+              currentAvailable.length > 0
+                ? pickRandomTask(currentAvailable)
+                : null
+            );
+
+        selectedTaskId = finalTask ? finalTask.id : null;
+
+        isDrawing = false;
+        drawResult.classList.remove("is-drawing");
+
+        renderDrawState();
+
+      }, 1000);
+    }
+
+
+    /* ==================================================
+       13. 統一更新畫面
+       每次資料改變，都重新顯示清單與完成進度。
+       ================================================== */
+
+    function renderAll() {
+      renderTaskList();
+      renderProgress();
+      renderDrawState();
+    }
+
+
+    /* ==================================================
+       14. 綁定使用者操作事件
+       ================================================== */
+
+    taskForm.addEventListener("submit", addTask);
+
+    // 開始輸入時清除原本的錯誤提示。
+    taskNameInput.addEventListener("input", () => {
+      formMessage.textContent = "";
+    });
+
+    drawButton.addEventListener("click", drawTask);
+    redrawButton.addEventListener("click", drawTask);
+
+
+    /* ==================================================
+       15. 網頁初始化
+       開啟網頁時先讀取 localStorage，再顯示畫面。
+       ================================================== */
+
+    function initializeApp() {
+      tasks = loadTasks();
+
+      renderAll();
+    }
+
+    initializeApp();
+
+  </script>
+</body>
+</html>
